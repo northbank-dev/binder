@@ -154,7 +154,7 @@ function cardHTML(c){
       <div><h2 class="name">${esc(c.n)}</h2><div class="set">${esc(c.s)} · ${esc(c.ra)}</div></div>
       <div class="foot"><div class="chips"><span class="chip ${cls}">${esc(lab)}</span>${c.q>1?`<span class="chip q">${c.q}× vorhanden</span>`:''}</div>
       ${mode==="none"?'':price(c)==null?'<div class="price req">Auf Anfrage</div>':`<div class="price"><small>${sym()}</small>${fmt(price(c))}</div>`}</div>
-      ${showLinks?`<div class="links"><a href="${tcg(c)}" target="_blank" rel="noopener">TCGplayer ↗</a><a href="${ebay(c)}" target="_blank" rel="noopener">eBay verkauft ↗</a></div>`:''}</article>`}
+      ${showLinks?`<div class="links"><a href="${tcg(c)}" target="_blank" rel="noopener">TCGplayer ↗</a><a href="${ebay(c)}" target="_blank" rel="noopener">eBay verkauft ↗</a><a href="https://www.ricardo.ch/de/s/${encodeURIComponent(rq(c))}/" target="_blank" rel="noopener">Ricardo ↗</a></div>`:''}</article>`}
 function render(){
   const q=$('q').value.trim().toLowerCase();
   const base=DATA.filter(c=>((filt==="mtg")===c.mtg)&&(!q||(c.n+" "+c.s+" "+c.no+" "+c.ra).toLowerCase().includes(q)));
@@ -184,6 +184,7 @@ function render(){
   $('sub').textContent=(filt==="mtg"?"Magic: The Gathering":"Pokémon")+(mode==="mine"?" · Preis pro Stück":mode==="market"?" · Marktwert pro Stück (TCGplayer)":"");
 }
 function q(c){const n=c.n.replace(/\s*\(.*?\)\s*/g,' ').trim();const g=c.graded?' '+c.c.replace(/GEM.*|10.*/,m=>m.startsWith('10')?'10':''):'';const t=c.mtg?`${n} ${c.s}`:c.ra==='Sealed'?c.n:`${n} ${c.no}${g}`;return t.replace(/[,:()\-]/g,' ').replace(/\s+/g,' ').trim()}
+function rq(c){const cl=s=>s.replace(/[(),:#]|\s-\s/g,' ').replace(/\s+/g,' ').trim();if(c.mtg)return /^(Island|Mountain|Plains)$/.test(c.n)?'Unstable '+c.n:cl(c.n.replace('(Showcase)',''));return cl(cl(c.n.replace(/\s*\(.*?\)/g,''))+' '+c.no.replace(/^#/,''))}
 function tcg(c){return c.id?`https://www.tcgplayer.com/product/${c.id}`:`https://www.tcgplayer.com/search/all/product?q=${encodeURIComponent(q(c))}`}
 function ebay(c){return `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q(c))}&LH_Sold=1&LH_Complete=1`}
 function esc(t){return String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
