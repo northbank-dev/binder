@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}*,*::before,*::after{box-sizing:border-box}</style>
+<title>Karten zu verkaufen</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: binder sleeve grid — each card a "slot" with set number, condition chip and a big price tag */
+:root{
+  --bg:#eef1f5; --sheet:#ffffff; --fg:#141a24; --muted:#5d6878; --line:#d6dce5;
+  --accent:#1f5fd1; --gold:#b8860b; --gold-bg:#fbf3dc; --warn:#a1462a; --warn-bg:#fbe9e2; --ok:#22714a; --ok-bg:#e2f3ea; --mt:#1d5bc4; --mt-bg:#e1ebfb; --mid:#8a5a00; --mid-bg:#fbefd6;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --sheet:#18202b; --fg:#e8edf4; --muted:#93a0b2; --line:#2a3443;
+  --accent:#6fa0ff; --gold:#e8bf55; --gold-bg:#2d2715; --warn:#f0957a; --warn-bg:#36211b; --ok:#6fd39f; --ok-bg:#16301f; --mt:#8db4ff; --mt-bg:#18263f; --mid:#f0c060; --mid-bg:#33280f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --sheet:#18202b; --fg:#e8edf4; --muted:#93a0b2; --line:#2a3443;
+  --accent:#6fa0ff; --gold:#e8bf55; --gold-bg:#2d2715; --warn:#f0957a; --warn-bg:#36211b; --ok:#6fd39f; --ok-bg:#16301f; --mt:#8db4ff; --mt-bg:#18263f; --mid:#f0c060; --mid-bg:#33280f; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:end;justify-content:space-between;margin-bottom:20px}
+h1{user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;font-family:var(--display);font-weight:800;font-size:clamp(28px,6vw,46px);line-height:1;margin:0;letter-spacing:-.02em;text-wrap:balance}
+.sub{color:var(--muted);margin:8px 0 0}
+.stats{display:flex;gap:24px;font-variant-numeric:tabular-nums}
+.stat b{display:block;font-family:var(--display);font-size:26px;font-weight:800}
+.stat span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;display:flex;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--line);margin-bottom:18px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+input,select,button{font:inherit;color:var(--fg);background:var(--sheet);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+input{flex:1 1 200px;min-width:0}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:var(--sheet);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--sheet)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:14px 14px 12px;display:grid;grid-template-rows:auto 1fr auto;gap:10px;min-width:0}
+.top{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.name{font-family:var(--display);font-weight:600;font-size:18px;line-height:1.2;margin:0;overflow-wrap:anywhere}
+.set{color:var(--muted);font-size:13px;margin-top:3px}
+.foot{display:flex;justify-content:space-between;align-items:end;gap:8px;border-top:1px dashed var(--line);padding-top:10px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px;background:var(--ok-bg);color:var(--ok);white-space:nowrap}
+.chip.dmg{background:var(--warn-bg);color:var(--warn)}
+.chip.grade{background:var(--gold-bg);color:var(--gold)}
+.chip.q{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.price{font-family:var(--display);font-weight:800;font-size:24px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.price small{font-size:12px;font-weight:600;color:var(--muted);margin-right:3px}
+.card.big{border-color:var(--gold)}
+.empty{color:var(--muted);padding:40px 0;text-align:center}
+.note{color:var(--muted);font-size:12px;margin-top:24px}
+.thumb{display:block;width:100%;aspect-ratio:286/400;border-radius:6px;overflow:hidden;background:var(--bg);border:0;padding:0;cursor:zoom-in}
+.thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.noimg{display:grid;place-items:center;width:100%;aspect-ratio:286/400;border-radius:6px;background:var(--bg);color:var(--muted);font-size:12px;text-align:center;padding:12px;box-sizing:border-box}
+.card{grid-template-rows:auto auto 1fr auto auto}
+.lb{position:fixed;inset:0;z-index:20;background:rgba(5,8,12,.86);display:grid;place-items:center;padding:24px;cursor:zoom-out}
+.lb img{max-height:88vh;max-width:min(92vw,520px);border-radius:12px}
+.lb p{color:#fff;margin:10px 0 0;text-align:center;font-family:var(--display)}
+.price.req{font-size:15px;color:var(--muted)}
+button.secret{cursor:pointer}
+button.secret[aria-pressed="true"]{background:var(--accent);color:var(--sheet);border-color:var(--accent)}
+.tiers{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px}
+.tiers button{display:inline-flex;gap:6px;align-items:center;cursor:pointer;border-radius:99px;padding:6px 12px;font-size:13px}
+.tiers button span{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tiers button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tiers button[aria-pressed="true"] span{color:var(--bg);opacity:.7}
+.tier{margin:0 0 28px}
+.tier h3{font-family:var(--display);font-size:20px;font-weight:800;margin:0 0 10px;display:flex;gap:10px;align-items:baseline}
+.tier h3 span{font-family:var(--body);font-size:13px;font-weight:500;color:var(--muted)}
+button.bulk{display:block;margin:4px auto 0;cursor:pointer;color:var(--accent)}
+.links{display:flex;gap:6px;flex-wrap:wrap}
+.links a{font-size:12px;font-weight:600;text-decoration:none;color:var(--accent);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+.links a:hover{border-color:var(--accent)}
+.ch{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 18px;max-width:75ch}
+.ch h2{font-family:var(--display);font-size:17px;margin:0 0 6px}
+.ch p{margin:0 0 6px;color:var(--fg)}
+.ch p:last-child{margin:0;color:var(--muted);font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:-6px 0 16px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.chip.mt{background:var(--mt-bg);color:var(--mt)}
+.chip.mid{background:var(--mid-bg);color:var(--mid)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1 id="title">Karten zu verkaufen</h1><p class="sub" id="sub">Pokémon &amp; Magic</p></div>
+  <div class="stats"><div class="stat"><b id="sCards">–</b><span>Karten</span></div><div class="stat" id="valStat"><b id="sVal">–</b><span>Gesamtwert</span></div></div>
+</header>
+<div class="legend" aria-label="Zustand">
+  <span><b class="chip mt">MT</b>Mint</span>
+  <span><b class="chip">NM</b>Near Mint</span>
+  <span><b class="chip mid">LP</b>Lightly Played</span>
+  <span><b class="chip mid">MP</b>Moderately Played</span>
+  <span><b class="chip dmg">HP</b>Heavily Played</span>
+  <span><b class="chip dmg">DMG</b>Damaged</span>
+</div>
+<div class="bar">
+  <input id="q" type="search" placeholder="Suchen: Name, Set, Nummer…" aria-label="Suchen">
+  <div class="seg" role="group" aria-label="Spiel">
+    <button id="f-pkm" data-f="pkm" aria-pressed="true">Pokémon</button>
+    <button id="f-mtg" data-f="mtg" aria-pressed="false">Magic</button>
+  </div>
+  <div class="seg" role="group" aria-label="Währung">
+    <button id="c-chf" data-c="CHF" aria-pressed="true">CHF</button>
+    <button id="c-usd" data-c="USD" aria-pressed="false">USD</button>
+  </div>
+  <div class="seg" id="modeBox" role="group" aria-label="Preise" hidden>
+    <button id="m-mine" data-m="mine" aria-pressed="true">Meine Preise</button>
+    <button id="m-market" data-m="market" aria-pressed="false">Marktwert</button>
+    <button id="m-none" data-m="none" aria-pressed="false">Preise aus</button>
+  </div>
+  <button id="linkBtn" class="secret" aria-pressed="false" hidden>Links: aus</button>
+  <select id="sort" aria-label="Sortieren">
+    <option value="pd">Preis ↓</option><option value="pa">Preis ↑</option><option value="n">Name A–Z</option><option value="s">Set</option>
+  </select>
+</div>
+<div class="tiers" id="tiers" role="group" aria-label="Preisklasse"></div>
+<div id="grid"></div>
+<button id="bulkBtn" class="bulk" hidden></button>
+<div class="lb" id="lb" hidden><div><img id="lbImg" alt=""><p id="lbCap"></p></div></div>
+<p class="empty" id="empty" hidden>Keine Karte passt zur Suche.</p>
+<p class="note">Kurs: 1 USD = 0.827 CHF (16.10.2026). CHF-Preise auf 5 Rappen gerundet. Marktwert = TCGplayer-Durchschnitt. Bilder: Referenzbilder (TCGplayer), nicht Fotos der einzelnen Karte.</p>
+</div>
+<script>
+const DATA=[{"n":"Aether Vial","s":"Iconic Masters","no":"#212","ra":"Rare","q":1,"p":3.71,"c":"Near Mint","graded":false,"mtg":true,"id":"145333"},{"n":"Alakazam (4th Print 1999-2000)","s":"Base Set 4th Print","no":"001/102","ra":"Holo Rare","q":1,"p":18.9,"c":"Damaged","graded":false,"mtg":false,"id":"","my":16},{"n":"Alolan Exeggutor","s":"MEGA Expansion 30th Celebration","no":"104/103","ra":"Art Rare","q":1,"p":2.77,"c":"Near Mint","graded":false,"mtg":false,"id":"716906"},{"n":"Alolan Meowth","s":"MEGA Expansion 30th Celebration","no":"115/103","ra":"Art Rare","q":1,"p":6.74,"c":"Near Mint","graded":false,"mtg":false,"id":"716917"},{"n":"Arcbound Reclaimer","s":"Darksteel","no":"#101","ra":"Rare","q":1,"p":6.08,"c":"Near Mint","graded":false,"mtg":true,"id":"11618"},{"n":"Arceus V","s":"SWSH Black Star Promos","no":"SWSH204","ra":"Promo","q":1,"p":22.28,"c":"Near Mint","graded":false,"mtg":false,"id":"271837","my":20},{"n":"Articuno","s":"Wizards Black Star Promos","no":"22","ra":"Promo","q":1,"p":12.98,"c":"Moderately Played","graded":false,"mtg":false,"id":"83647"},{"n":"Bishop of Wings","s":"Magic 2020 Core Set","no":"#8","ra":"Rare Foil","q":1,"p":8.31,"c":"Near Mint","graded":false,"mtg":true,"id":"192597"},{"n":"Bolas's Citadel","s":"War of the Spark","no":"#79","ra":"Rare","q":1,"p":16.07,"c":"Near Mint","graded":false,"mtg":true,"id":"187187"},{"n":"Bulbasaur","s":"Mega Brave","no":"064/063","ra":"Art Rare","q":1,"p":7.33,"c":"Near Mint","graded":false,"mtg":false,"id":"647173"},{"n":"Cavalier of Dawn","s":"Magic 2020 Core Set","no":"#10","ra":"Mythic","q":1,"p":4.88,"c":"Near Mint","graded":false,"mtg":true,"id":"192830"},{"n":"Celebi","s":"XY Black Star Promos","no":"XY187","ra":"Promo","q":1,"p":35.47,"c":"Near Mint","graded":false,"mtg":false,"id":"127129","my":30},{"n":"Chandelure","s":"MEGA Expansion 30th Celebration","no":"112/103","ra":"Art Rare","q":1,"p":4.53,"c":"Near Mint","graded":false,"mtg":false,"id":"716914"},{"n":"Charizard-GX","s":"SM Black Star Promos","no":"SM60","ra":"Promo","q":1,"p":53.34,"c":"Near Mint","graded":false,"mtg":false,"id":"148151","my":50},{"n":"Chord of Calling","s":"Ravnica: City of Guilds","no":"#156","ra":"Rare","q":1,"p":7.32,"c":"Near Mint","graded":false,"mtg":true,"id":"13224"},{"n":"Cleanfall","s":"Champions of Kamigawa","no":"#6","ra":"Uncommon Foil","q":1,"p":1.6,"c":"Near Mint","graded":false,"mtg":true,"id":"11963"},{"n":"Confusion in the Ranks","s":"Mirrodin","no":"#87","ra":"Rare","q":1,"p":14.68,"c":"Near Mint","graded":false,"mtg":true,"id":"11315"},{"n":"Crobat","s":"Chaos Rising","no":"093/086","ra":"Illustration Rare","q":1,"p":1.68,"c":"Near Mint","graded":false,"mtg":false,"id":"693471"},{"n":"Dark Alakazam","s":"Team Rocket Unlimited","no":"18/82","ra":"Rare","q":1,"p":7.02,"c":"Damaged","graded":false,"mtg":false,"id":"84560"},{"n":"Dark Blastoise","s":"Team Rocket Unlimited","no":"3/82","ra":"Holo Rare","q":1,"p":99.59,"c":"Damaged","graded":false,"mtg":false,"id":"84568","my":100},{"n":"Dark Dragonite","s":"Team Rocket 1st Edition","no":"22/82","ra":"Rare","q":1,"p":29.25,"c":"Damaged","graded":false,"mtg":false,"id":"84586","my":25},{"n":"Dark Flareon","s":"Team Rocket Unlimited","no":"35/82","ra":"Uncommon","q":1,"p":2.82,"c":"Damaged","graded":false,"mtg":false,"id":"84597"},{"n":"Dispersal Shield","s":"Scourge","no":"#33","ra":"Common Foil","q":1,"p":8.74,"c":"Near Mint","graded":false,"mtg":true,"id":"10859"},{"n":"Ditto","s":"MEGA Expansion 30th Celebration","no":"121/103","ra":"Art Rare","q":1,"p":9.93,"c":"Near Mint","graded":false,"mtg":false,"id":"719645"},{"n":"Domri, Anarch of Bolas","s":"Promo Pack: Core Set 2021","no":"#191","ra":"Rare Foil","q":1,"p":2.33,"c":"Near Mint","graded":false,"mtg":true,"id":"216925"},{"n":"Dragon Fangs","s":"Scourge","no":"#117","ra":"Common Foil","q":1,"p":3.19,"c":"Near Mint","graded":false,"mtg":true,"id":"10937"},{"n":"Dragonair (4th Print 1999-2000)","s":"Base Set 4th Print","no":"018/102","ra":"Rare","q":1,"p":8.67,"c":"Damaged","graded":false,"mtg":false,"id":""},{"n":"Drannith Magistrate","s":"Ikoria: Lair of Behemoths","no":"#11","ra":"Rare","q":1,"p":12.11,"c":"Near Mint","graded":false,"mtg":true,"id":"212115"},{"n":"Drifloon","s":"30th Anniversary Celebration","no":"136/128","ra":"Illustration Rare","q":1,"p":4.26,"c":"Near Mint","graded":false,"mtg":false,"id":"696684"},{"n":"Drifloon","s":"MEGA Expansion 30th Celebration","no":"061/103","ra":"No Rarity","q":4,"p":2.31,"c":"Near Mint","graded":false,"mtg":false,"id":"716863"},{"n":"Drifloon","s":"MEGA Expansion 30th Celebration","no":"111/103","ra":"Art Rare","q":1,"p":4.55,"c":"Near Mint","graded":false,"mtg":false,"id":"716913"},{"n":"Dryad of the Ilysian Grove","s":"Theros Beyond Death","no":"#169","ra":"Rare","q":2,"p":9.52,"c":"Near Mint","graded":false,"mtg":true,"id":"206936"},{"n":"Elenda, the Dusk Rose","s":"Rivals of Ixalan","no":"#157","ra":"Mythic Foil","q":1,"p":13.0,"c":"Near Mint","graded":false,"mtg":true,"id":"155632"},{"n":"Elenda, the Dusk Rose","s":"Rivals of Ixalan","no":"#157","ra":"Mythic","q":1,"p":6.2,"c":"Near Mint","graded":false,"mtg":true,"id":"155632"},{"n":"Espeon","s":"SWSH Black Star Promos","no":"SWSH174","ra":"Promo","q":1,"p":15.15,"c":"Near Mint","graded":false,"mtg":false,"id":"253410","my":15},{"n":"Exeggutor","s":"Mega Brave","no":"066/063","ra":"Art Rare","q":1,"p":1.76,"c":"Near Mint","graded":false,"mtg":false,"id":"647175"},{"n":"Faces of the Past","s":"Scourge","no":"#35","ra":"Rare","q":1,"p":8.66,"c":"Near Mint","graded":false,"mtg":true,"id":"10861"},{"n":"Finale of Devastation","s":"War of the Spark","no":"#160","ra":"Mythic","q":1,"p":32.33,"c":"Near Mint","graded":false,"mtg":true,"id":"188701"},{"n":"Frogadier","s":"Chaos Rising","no":"089/086","ra":"Illustration Rare","q":1,"p":3.86,"c":"Near Mint","graded":false,"mtg":false,"id":"693491"},{"n":"Glint-Horn Buccaneer","s":"Magic 2020 Core Set","no":"#141","ra":"Rare","q":1,"p":8.81,"c":"Near Mint","graded":false,"mtg":true,"id":"192896"},{"n":"Goblin King","s":"8th Edition","no":"#190","ra":"Rare","q":3,"p":5.51,"c":"Near Mint","graded":false,"mtg":true,"id":"11150"},{"n":"Godzilla, Doom Inevitable - Yidaro, Wandering Monster","s":"Ikoria: Lair of Behemoths","no":"#375","ra":"Rare Foil","q":1,"p":30.86,"c":"Near Mint","graded":false,"mtg":true,"id":"212061","my":25},{"n":"Heat Shimmer","s":"Lorwyn","no":"#175","ra":"Rare","q":1,"p":7.78,"c":"Near Mint","graded":false,"mtg":true,"id":"15521"},{"n":"Heliod's Intervention","s":"Theros Beyond Death","no":"#19","ra":"Rare","q":2,"p":2.09,"c":"Near Mint","graded":false,"mtg":true,"id":"207075"},{"n":"Island","s":"Unstable","no":"#213","ra":"Land","q":1,"p":3.75,"c":"Near Mint","graded":false,"mtg":true,"id":"151825"},{"n":"Jace, Wielder of Mysteries","s":"War of the Spark","no":"#54","ra":"Rare","q":1,"p":11.4,"c":"Near Mint","graded":false,"mtg":true,"id":"187141"},{"n":"Jirachi ex","s":"MEGA Expansion 30th Celebration","no":"081/103","ra":"Double Rare (RR)","q":3,"p":1.04,"c":"Near Mint","graded":false,"mtg":false,"id":"716883"},{"n":"Jirachi ex","s":"30th Anniversary Celebration","no":"155/128","ra":"Special Illustration Rare","q":1,"p":47.82,"c":"Near Mint","graded":false,"mtg":false,"id":"716232","my":50},{"n":"Jolteon (Cosmos Holo)","s":"Prismatic Evolutions","no":"029/131","ra":"Holo Rare","q":1,"p":1.63,"c":"Near Mint","graded":false,"mtg":false,"id":"654646"},{"n":"Jumpluff","s":"Neo Revelation Unlimited","no":"9/64","ra":"Holo Rare","q":1,"p":16.66,"c":"Damaged","graded":false,"mtg":false,"id":"86362","my":14},{"n":"Kagemaro, First to Suffer","s":"Saviors of Kamigawa","no":"#73","ra":"Rare","q":1,"p":2.88,"c":"Near Mint","graded":false,"mtg":true,"id":"12463"},{"n":"Kecleon","s":"EX Sandstorm","no":"18/100","ra":"Reverse Holo","q":1,"p":16.7,"c":"Damaged","graded":false,"mtg":false,"id":"86428","my":14},{"n":"Kiora Bests the Sea God","s":"Theros Beyond Death","no":"#52","ra":"Mythic","q":1,"p":8.22,"c":"Near Mint","graded":false,"mtg":true,"id":"206854"},{"n":"Kogla, the Titan Ape","s":"Ikoria: Lair of Behemoths","no":"#162","ra":"Rare","q":2,"p":3.82,"c":"Near Mint","graded":false,"mtg":true,"id":"212082"},{"n":"Konda's Banner","s":"Champions of Kamigawa","no":"#259","ra":"Rare","q":1,"p":12.62,"c":"Near Mint","graded":false,"mtg":true,"id":"12075"},{"n":"Konda, Lord of Eiganjo","s":"Champions of Kamigawa","no":"#30","ra":"Rare","q":2,"p":6.19,"c":"Near Mint","graded":false,"mtg":true,"id":"12074"},{"n":"Kusari-Gama","s":"Champions of Kamigawa","no":"#260","ra":"Rare","q":1,"p":6.38,"c":"Near Mint","graded":false,"mtg":true,"id":"12080"},{"n":"Lugia","s":"MEGA Expansion 30th Celebration","no":"097/103","ra":"No Rarity","q":1,"p":0.95,"c":"Near Mint","graded":false,"mtg":false,"id":"716899"},{"n":"Lycanroc","s":"MEGA Expansion 30th Celebration","no":"113/103","ra":"Art Rare","q":1,"p":8.11,"c":"Near Mint","graded":false,"mtg":false,"id":"716915"},{"n":"Machamp (4th Print 1999-2000)","s":"Base Set 4th Print","no":"008/102","ra":"Holo Rare","q":1,"p":9.41,"c":"Damaged","graded":false,"mtg":false,"id":""},{"n":"Magearna-EX","s":"XY Black Star Promos","no":"XY175","ra":"Promo","q":1,"p":2.56,"c":"Near Mint","graded":false,"mtg":false,"id":"123453"},{"n":"Magus of the Vineyard","s":"The List Reprints","no":"#132","ra":"Rare","q":1,"p":5.38,"c":"Near Mint","graded":false,"mtg":true,"id":"507568"},{"n":"Marshadow","s":"Mega Brave","no":"069/063","ra":"Art Rare","q":1,"p":3.36,"c":"Near Mint","graded":false,"mtg":false,"id":"647178"},{"n":"Maushold","s":"MEGA Expansion 30th Celebration","no":"123/103","ra":"Art Rare","q":1,"p":11.09,"c":"Near Mint","graded":false,"mtg":false,"id":"716923"},{"n":"Maushold","s":"MEGA Expansion 30th Celebration","no":"100/103","ra":"No Rarity","q":4,"p":1.26,"c":"Near Mint","graded":false,"mtg":false,"id":"716902"},{"n":"Mega Absol","s":"Mega Brave","no":"079/063","ra":"Super Rare","q":1,"p":3.15,"c":"Near Mint","graded":false,"mtg":false,"id":"647188"},{"n":"Mega Lopunny & Jigglypuff-GX","s":"Alter Genesis","no":"104/095","ra":"Super Rare","q":1,"p":176.0,"c":"Near Mint","graded":false,"mtg":false,"id":"","my":200},{"n":"Memnarch","s":"Darksteel","no":"#129","ra":"Rare","q":1,"p":5.16,"c":"Near Mint","graded":false,"mtg":true,"id":"11595"},{"n":"Mew","s":"MEGA Expansion 30th Celebration","no":"056/103","ra":"No Rarity","q":1,"p":1.17,"c":"Near Mint","graded":false,"mtg":false,"id":"716858"},{"n":"Mew","s":"Fates Collide","no":"29/124","ra":"Holo Rare","q":1,"p":14.79,"c":"Near Mint","graded":false,"mtg":false,"id":"117789","my":15},{"n":"Mew VMAX","s":"MEGA Expansion 30th Celebration","no":"163/103","ra":"No Rarity","q":1,"p":35.38,"c":"Near Mint","graded":false,"mtg":false,"id":"717003","my":50},{"n":"Mew ex","s":"MEGA Expansion 30th Celebration","no":"057/103","ra":"Double Rare (RR)","q":1,"p":1.08,"c":"Near Mint","graded":false,"mtg":false,"id":"716859"},{"n":"Mewtwo","s":"Detective Pikachu","no":"12/18","ra":"Ultra Rare","q":2,"p":10.84,"c":"Near Mint","graded":false,"mtg":false,"id":"186020"},{"n":"Mewtwo","s":"MEGA Expansion 30th Celebration","no":"054/103","ra":"No Rarity","q":2,"p":0.54,"c":"Near Mint","graded":false,"mtg":false,"id":"716856"},{"n":"Mewtwo","s":"Wizards Black Star Promos","no":"14","ra":"Promo","q":1,"p":13.3,"c":"Damaged","graded":false,"mtg":false,"id":"87417","onreq":true},{"n":"Mewtwo","s":"Wizards Black Star Promos","no":"3","ra":"Promo","q":1,"p":15.98,"c":"Damaged","graded":false,"mtg":false,"id":"87414","onreq":true},{"n":"Mewtwo ex","s":"MEGA Expansion 30th Celebration","no":"055/103","ra":"Double Rare (RR)","q":1,"p":1.14,"c":"Near Mint","graded":false,"mtg":false,"id":"716857"},{"n":"Mewtwo ex","s":"MEGA Expansion 30th Celebration","no":"134/103","ra":"Futuristic Rare","q":1,"p":66.16,"c":"Near Mint","graded":false,"mtg":false,"id":"716931","my":70},{"n":"Moltres","s":"Wizards Black Star Promos","no":"21","ra":"Promo","q":1,"p":9.16,"c":"Damaged","graded":false,"mtg":false,"id":"87557"},{"n":"Mountain","s":"Unstable","no":"#215","ra":"Land","q":1,"p":2.62,"c":"Near Mint","graded":false,"mtg":true,"id":"151827"},{"n":"Myojin of Life's Web","s":"Champions of Kamigawa","no":"#229","ra":"Rare","q":1,"p":6.83,"c":"Near Mint","graded":false,"mtg":true,"id":"12101"},{"n":"Myr Matrix","s":"Darksteel","no":"#132","ra":"Rare","q":1,"p":9.15,"c":"Near Mint","graded":false,"mtg":true,"id":"11589"},{"n":"Nagao, Bound by Honor","s":"Champions of Kamigawa","no":"#36","ra":"Uncommon Foil","q":1,"p":4.34,"c":"Near Mint","graded":false,"mtg":true,"id":"12105"},{"n":"Necrogen Mists","s":"Mirrodin","no":"#69","ra":"Rare","q":1,"p":12.55,"c":"Near Mint","graded":false,"mtg":true,"id":"11390"},{"n":"Nicol Bolas, Dragon-God","s":"War of the Spark","no":"#207","ra":"Mythic","q":1,"p":33.63,"c":"Near Mint","graded":false,"mtg":true,"id":"188630"},{"n":"Nylea, Keen-Eyed","s":"Promo Pack: Theros Beyond Death","no":"#185","ra":"Mythic Foil","q":1,"p":9.89,"c":"Near Mint","graded":false,"mtg":true,"id":"207697"},{"n":"Nyxbloom Ancient","s":"Theros Beyond Death","no":"#190","ra":"Mythic","q":2,"p":28.0,"c":"Near Mint","graded":false,"mtg":true,"id":"207021","my":25},{"n":"Oathkeeper, Takeno's Daisho","s":"Champions of Kamigawa","no":"#265","ra":"Rare","q":1,"p":15.94,"c":"Near Mint","graded":false,"mtg":true,"id":"12117"},{"n":"Phyrexian Altar","s":"Invasion","no":"#306","ra":"Rare","q":1,"p":28.28,"c":"Damaged","graded":false,"mtg":true,"id":"7580","my":25},{"n":"Pikachu & Zekrom-GX","s":"Team Up","no":"33/181","ra":"Ultra Rare","q":1,"p":53.04,"c":"Near Mint","graded":false,"mtg":false,"id":"183804","my":50},{"n":"Pikachu (10/30)","s":"30th Anniversary Celebration","no":"032/128","ra":"Pikachu Rare","q":1,"p":0.98,"c":"Near Mint","graded":false,"mtg":false,"id":"712939"},{"n":"Pikachu (10/30)","s":"MEGA Expansion 30th Celebration","no":"026/103","ra":"No Rarity","q":2,"p":2.09,"c":"Near Mint","graded":false,"mtg":false,"id":"716828"},{"n":"Pikachu (18/30)","s":"MEGA Expansion 30th Celebration","no":"034/103","ra":"No Rarity","q":2,"p":4.26,"c":"Near Mint","graded":false,"mtg":false,"id":"716836"},{"n":"Pikachu (18/30)","s":"30th Anniversary Celebration","no":"040/128","ra":"Pikachu Rare","q":1,"p":1.97,"c":"Near Mint","graded":false,"mtg":false,"id":"712944"},{"n":"Pikachu ex","s":"Super Electric Breaker","no":"132/106","ra":"Special Art Rare","q":1,"p":253.96,"c":"Mint","graded":false,"mtg":false,"id":"587699","my":300},{"n":"Pikachu ex","s":"30th Anniversary Celebration","no":"054/128","ra":"Double Rare (RR)","q":2,"p":1.2,"c":"Near Mint","graded":false,"mtg":false,"id":"712952"},{"n":"Plains","s":"Unstable","no":"#212","ra":"Land","q":1,"p":2.04,"c":"Near Mint","graded":false,"mtg":true,"id":"151824"},{"n":"Platinum Angel","s":"Mirrodin","no":"#228","ra":"Rare","q":1,"p":11.97,"c":"Near Mint","graded":false,"mtg":true,"id":"11539"},{"n":"Polukranos, World Eater","s":"The List Reprints","no":"#172","ra":"Mythic","q":1,"p":2.5,"c":"Near Mint","graded":false,"mtg":true,"id":"492674"},{"n":"Primoc Escapee","s":"Legions","no":"#49","ra":"Uncommon Foil","q":1,"p":2.69,"c":"Near Mint","graded":false,"mtg":true,"id":"10737"},{"n":"Purphoros, Bronze-Blooded (Showcase)","s":"Theros Beyond Death","no":"#265","ra":"Mythic","q":2,"p":3.55,"c":"Near Mint","graded":false,"mtg":true,"id":"206694"},{"n":"Raichu","s":"Base Set 2","no":"16/130","ra":"Holo Rare","q":1,"p":48.04,"c":"Moderately Played","graded":false,"mtg":false,"id":"42460","my":50},{"n":"Raichu","s":"Skyridge","no":"H25/H32","ra":"Holo Rare","q":1,"p":269.47,"c":"Moderately Played","graded":false,"mtg":false,"id":"88502","my":220},{"n":"Rayquaza VMAX","s":"VSTAR Universe","no":"108/172","ra":"Triple Rare (RRR)","q":1,"p":6.74,"c":"Near Mint","graded":false,"mtg":false,"id":""},{"n":"Riolu","s":"Mega Brave","no":"068/063","ra":"Art Rare","q":1,"p":3.46,"c":"Near Mint","graded":false,"mtg":false,"id":"647177"},{"n":"Salvaging Station","s":"Fifth Dawn","no":"#148","ra":"Rare","q":1,"p":5.58,"c":"Near Mint","graded":false,"mtg":true,"id":"11821"},{"n":"Sarkhan, Fireblood","s":"Magic 2019 Core Set","no":"#154","ra":"Mythic","q":1,"p":3.58,"c":"Near Mint","graded":false,"mtg":true,"id":"169156"},{"n":"Scizor ex","s":"MEGA Expansion 30th Celebration","no":"145/103","ra":"No Rarity","q":2,"p":14.23,"c":"Near Mint","graded":false,"mtg":false,"id":"717002"},{"n":"Scraggy","s":"MEGA Expansion 30th Celebration","no":"116/103","ra":"Art Rare","q":1,"p":2.08,"c":"Near Mint","graded":false,"mtg":false,"id":"716918"},{"n":"Second Harvest","s":"Shadows over Innistrad","no":"#227","ra":"Rare","q":1,"p":4.63,"c":"Near Mint","graded":false,"mtg":true,"id":"115942"},{"n":"Setessan Champion","s":"Theros Beyond Death","no":"#198","ra":"Rare","q":2,"p":3.52,"c":"Near Mint","graded":false,"mtg":true,"id":"206133"},{"n":"Setessan Champion","s":"Theros Beyond Death","no":"#198","ra":"Rare Foil","q":1,"p":7.01,"c":"Near Mint","graded":false,"mtg":true,"id":"206133"},{"n":"Shapesharer","s":"The List Reprints","no":"#85/301","ra":"Rare","q":1,"p":4.58,"c":"Near Mint","graded":false,"mtg":true,"id":"631702"},{"n":"Shark Typhoon","s":"Ikoria: Lair of Behemoths","no":"#67","ra":"Rare","q":2,"p":2.63,"c":"Near Mint","graded":false,"mtg":true,"id":"212133"},{"n":"Sneasel","s":"MEGA Expansion 30th Celebration","no":"140/103","ra":"No Rarity","q":1,"p":19.16,"c":"Near Mint","graded":false,"mtg":false,"id":"716985","my":16},{"n":"Snorlax","s":"MEGA Expansion 30th Celebration","no":"095/103","ra":"No Rarity","q":1,"p":1.07,"c":"Near Mint","graded":false,"mtg":false,"id":"716897"},{"n":"Spark Double","s":"War of the Spark","no":"#68","ra":"Rare","q":1,"p":9.66,"c":"Near Mint","graded":false,"mtg":true,"id":"188468"},{"n":"Spiritomb","s":"Mega Brave","no":"071/063","ra":"Art Rare","q":1,"p":1.68,"c":"Near Mint","graded":false,"mtg":false,"id":"647180"},{"n":"Summoning Station","s":"Fifth Dawn","no":"#158","ra":"Rare","q":1,"p":7.76,"c":"Near Mint","graded":false,"mtg":true,"id":"11830"},{"n":"Sylveon ex","s":"MEGA Expansion 30th Celebration","no":"059/103","ra":"Double Rare (RR)","q":1,"p":1.31,"c":"Near Mint","graded":false,"mtg":false,"id":"716861"},{"n":"Sylveon ex","s":"MEGA Expansion 30th Celebration","no":"130/103","ra":"Special Art Rare","q":1,"p":39.36,"c":"Near Mint","graded":false,"mtg":false,"id":"716928","my":50},{"n":"Team Rocket's Mewtwo ex","s":"Destined Rivals","no":"081/182","ra":"Double Rare (RR)","q":1,"p":1.37,"c":"Near Mint","graded":false,"mtg":false,"id":"632891"},{"n":"Tezzeret, Artifice Master","s":"Magic 2019 Core Set","no":"#79","ra":"Mythic","q":1,"p":5.07,"c":"Near Mint","graded":false,"mtg":true,"id":"169355"},{"n":"Thassa's Oracle","s":"Theros Beyond Death","no":"#73","ra":"Rare","q":1,"p":23.02,"c":"Near Mint","graded":false,"mtg":true,"id":"206926"},{"n":"The Ozolith","s":"Ikoria: Lair of Behemoths","no":"#237","ra":"Rare","q":2,"p":61.09,"c":"Near Mint","graded":false,"mtg":true,"id":"212302"},{"n":"Toxtricity","s":"MEGA Expansion 30th Celebration","no":"109/103","ra":"Art Rare","q":1,"p":3.59,"c":"Near Mint","graded":false,"mtg":false,"id":"716911"},{"n":"Turntimber Symbiosis","s":"Zendikar Rising","no":"#215","ra":"Mythic","q":1,"p":4.71,"c":"Near Mint","graded":false,"mtg":true,"id":"222409"},{"n":"Twinning Staff","s":"Commander 2020","no":"#70","ra":"Rare","q":1,"p":13.89,"c":"Near Mint","graded":false,"mtg":true,"id":"212212"},{"n":"Underworld Breach","s":"Theros Beyond Death","no":"#161","ra":"Rare","q":1,"p":11.23,"c":"Near Mint","graded":false,"mtg":true,"id":"206642"},{"n":"Vivien, Monsters' Advocate","s":"Ikoria: Lair of Behemoths","no":"#175","ra":"Mythic Foil","q":1,"p":3.15,"c":"Near Mint","graded":false,"mtg":true,"id":"211993"},{"n":"Vulpix","s":"Mega Brave","no":"067/063","ra":"Art Rare","q":1,"p":4.28,"c":"Near Mint","graded":false,"mtg":false,"id":"647176"},{"n":"Wayward Swordtooth","s":"Rivals of Ixalan","no":"#150","ra":"Rare","q":1,"p":4.11,"c":"Near Mint","graded":false,"mtg":true,"id":"155797"},{"n":"Worldslayer","s":"Mirrodin","no":"#276","ra":"Rare","q":1,"p":4.58,"c":"Near Mint","graded":false,"mtg":true,"id":"11313"},{"n":"Zapdos","s":"Wizards Black Star Promos","no":"23","ra":"Promo","q":1,"p":9.64,"c":"Damaged","graded":false,"mtg":false,"id":"90713"},{"n":"Zapdos","s":"MEGA Expansion 30th Celebration","no":"108/103","ra":"Art Rare","q":1,"p":8.28,"c":"Near Mint","graded":false,"mtg":false,"id":"716910"},{"n":"Zo-Zu the Punisher","s":"Champions of Kamigawa","no":"#200","ra":"Rare","q":1,"p":9.86,"c":"Near Mint","graded":false,"mtg":true,"id":"12226"}];
+const IMG=Object.fromEntries(["10737","10859","10861","10937","11150","11313","11315","11390","11539","11589","115942","11595","11618","117789","11821","11830","11963","12074","12075","12080","12101","12105","12117","12226","123453","12463","127129","13224","145333","148151","151824","151825","151827","15521","155632","155797","169156","169355","183804","186020","187141","187187","188468","188630","188701","192597","192830","192896","206133","206642","206694","206854","206926","206936","207021","207075","207697","211993","212061","212082","212115","212133","212212","212302","216925","222409","253410","271837","42460","492674","507568","523886","587699","602687","631702","632891","647173","647175","647176","647177","647178","647180","647188","684458","693471","693491","696684","712939","712944","712952","716232","716828","716836","716856","716857","716858","716859","716861","716863","716883","716897","716899","716902","716906","716910","716911","716913","716914","716915","716917","716918","716923","716928","716931","716985","717002","717003","719645","7580","83647","84560","84568","84586","84597","86362","86428","87414","87417","87557","88502","90713"].map(i=>[i,`https://tcgplayer-cdn.tcgplayer.com/product/${i}_in_400x400.jpg`]));
+const fmt=n=>n.toLocaleString('de-CH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const short={"Mint":"MT","Near Mint":"NM","Lightly Played":"LP","Moderately Played":"MP","Heavily Played":"HP","Damaged":"DMG"};
+const ccls={"Mint":"mt","Lightly Played":"mid","Moderately Played":"mid","Heavily Played":"dmg","Damaged":"dmg"};
+let filt="pkm",cur="CHF",mode="mine",showLinks=false;const RATE=0.827;
+const mkt=c=>cur==="CHF"?Math.round(c.p*RATE*20)/20:c.p;
+const price=c=>mode==="mine"?(c.onreq?null:c.my!=null?(cur==="CHF"?c.my:Math.round(c.my/RATE*100)/100):mkt(c)):mkt(c);
+const sym=()=>cur==="CHF"?"CHF":"$";
+const $=id=>document.getElementById(id);
+const TIERS=[{k:"top",min:100,max:1e9,t:"Top-Karten",r:"ab CHF 100"},{k:"high",min:50,max:100,t:"Gehoben",r:"CHF 50–100"},{k:"mid",min:10,max:50,t:"Mittel",r:"CHF 10–50"},{k:"low",min:3,max:10,t:"Günstig",r:"CHF 3–10"},{k:"bulk",min:0,max:3,t:"Kleinkram",r:"unter CHF 3"}];
+let tier="all";
+const chf=c=>mode==="mine"&&c.my!=null?c.my:c.p*RATE;
+const tierOf=c=>TIERS.find(t=>chf(c)>=t.min&&chf(c)<t.max).k;
+function cardHTML(c){
+    const cls=c.graded?"grade":(ccls[c.c]||"");
+    const lab=c.graded?c.c:(short[c.c]||c.c);
+    const im=IMG[c.id];
+    const pic=im?`<button class="thumb" data-id="${c.id}" aria-label="Bild von ${esc(c.n)} vergrössern"><img src="${im}" alt="${esc(c.n)}" loading="lazy"></button>`:`<div class="noimg">Kein Bild verfügbar<br>Foto auf Anfrage</div>`;
+    return `<article class="card${chf(c)>=100?' big':''}">${pic}
+      <div class="top"><span>${esc(c.no)}</span><span>${c.mtg?'MAGIC':'POKÉMON'}</span></div>
+      <div><h2 class="name">${esc(c.n)}</h2><div class="set">${esc(c.s)} · ${esc(c.ra)}</div></div>
+      <div class="foot"><div class="chips"><span class="chip ${cls}">${esc(lab)}</span>${c.q>1?`<span class="chip q">${c.q}× vorhanden</span>`:''}</div>
+      ${mode==="none"?'':price(c)==null?'<div class="price req">Auf Anfrage</div>':`<div class="price"><small>${sym()}</small>${fmt(price(c))}</div>`}</div>
+      ${showLinks?`<div class="links"><a href="${tcg(c)}" target="_blank" rel="noopener">TCGplayer ↗</a><a href="${ebay(c)}" target="_blank" rel="noopener">eBay verkauft ↗</a></div>`:''}</article>`}
+function render(){
+  const q=$('q').value.trim().toLowerCase();
+  const base=DATA.filter(c=>((filt==="mtg")===c.mtg)&&(!q||(c.n+" "+c.s+" "+c.no+" "+c.ra).toLowerCase().includes(q)));
+  const s=$('sort').value;
+  const pv=c=>price(c)??chf(c);
+  base.sort((a,b)=>s==="pd"?pv(b)-pv(a):s==="pa"?pv(a)-pv(b):s==="n"?a.n.localeCompare(b.n):a.s.localeCompare(b.s)||a.no.localeCompare(b.no));
+  const cnt=k=>base.filter(c=>tierOf(c)===k).reduce((a,c)=>a+c.q,0);
+  const priced=mode!=="none";
+  $('tiers').hidden=!priced;
+  if(priced) $('tiers').innerHTML=[{k:"all",t:"Alle",r:"ab CHF 3"},...TIERS].map(t=>{const n=t.k==="all"?base.filter(c=>tierOf(c)!=="bulk").reduce((a,c)=>a+c.q,0):cnt(t.k);return `<button data-t="${t.k}" aria-pressed="${tier===t.k}">${t.k==="all"?"Alle":t.r}<span>${n}</span></button>`}).join("");
+  let shown;
+  if(tier==="all"){
+    shown=base.filter(c=>tierOf(c)!=="bulk");
+    $('grid').innerHTML=priced?TIERS.filter(t=>t.k!=="bulk").map(t=>{const g=shown.filter(c=>tierOf(c)===t.k);return g.length?`<section class="tier"><h3>${t.t}<span>${t.r}</span></h3><div class="grid">${g.map(cardHTML).join("")}</div></section>`:""}).join(""):`<div class="grid">${shown.map(cardHTML).join("")}</div>`;
+  } else {
+    shown=base.filter(c=>tierOf(c)===tier);
+    const t=TIERS.find(x=>x.k===tier);
+    $('grid').innerHTML=`<section class="tier"><h3>${t.t}<span>${t.r}</span></h3><div class="grid">${shown.map(cardHTML).join("")}</div></section>`;
+  }
+  const nb=cnt("bulk");
+  $('bulkBtn').hidden=!(tier==="all"&&nb>0);
+  $('bulkBtn').textContent=`${nb} günstige Karten unter CHF 3 anzeigen`;
+  $('empty').hidden=shown.length>0;
+  $('sCards').textContent=shown.reduce((a,c)=>a+c.q,0);
+  $('sVal').textContent=sym()+" "+fmt(shown.reduce((a,c)=>a+c.q*(price(c)??0),0));
+  $('valStat').hidden=mode==="none";
+  $('sub').textContent=(filt==="mtg"?"Magic: The Gathering":"Pokémon")+(mode==="mine"?" · Preis pro Stück":mode==="market"?" · Marktwert pro Stück (TCGplayer)":"");
+}
+function q(c){const n=c.n.replace(/\s*\(.*?\)\s*/g,' ').trim();const g=c.graded?' '+c.c.replace(/GEM.*|10.*/,m=>m.startsWith('10')?'10':''):'';const t=c.mtg?`${n} ${c.s}`:c.ra==='Sealed'?c.n:`${n} ${c.no}${g}`;return t.replace(/[,:()\-]/g,' ').replace(/\s+/g,' ').trim()}
+function tcg(c){return c.id?`https://www.tcgplayer.com/product/${c.id}`:`https://www.tcgplayer.com/search/all/product?q=${encodeURIComponent(q(c))}`}
+function ebay(c){return `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q(c))}&LH_Sold=1&LH_Complete=1`}
+function esc(t){return String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;tier="all";document.querySelectorAll('[data-f]').forEach(x=>x.setAttribute('aria-pressed',x===b));render()});
+document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{cur=b.dataset.c;document.querySelectorAll('[data-c]').forEach(x=>x.setAttribute('aria-pressed',x===b));try{localStorage.setItem('cur',cur)}catch(e){}render()});
+try{const s=localStorage.getItem('cur');if(s==="USD"){cur="USD";$('c-usd').setAttribute('aria-pressed','true');$('c-chf').setAttribute('aria-pressed','false')}}catch(e){}
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.setAttribute('aria-pressed',x===b));try{localStorage.setItem('mode',mode)}catch(e){}render()});
+try{const m=localStorage.getItem('mode');if(m==="market"||m==="none"){mode=m;document.querySelectorAll('[data-m]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.m===m))}}catch(e){}
+let taps=[];$('title').addEventListener('click',()=>{const t=Date.now();taps=taps.filter(x=>t-x<800);taps.push(t);if(taps.length>=3){taps=[];$('modeBox').hidden=!$('modeBox').hidden;$('linkBtn').hidden=$('modeBox').hidden}});
+function setLinks(v){showLinks=v;$('linkBtn').setAttribute('aria-pressed',v);$('linkBtn').textContent='Links: '+(v?'an':'aus')}
+try{setLinks(localStorage.getItem('links')==='1')}catch(e){}
+$('linkBtn').onclick=()=>{setLinks(!showLinks);try{localStorage.setItem('links',showLinks?'1':'0')}catch(e){}render()};
+$('grid').onclick=e=>{const b=e.target.closest('.thumb');if(!b)return;const c=DATA.find(x=>x.id===b.dataset.id);$('lbImg').src=IMG[b.dataset.id];$('lbCap').textContent=c.n+' · '+c.s;$('lb').hidden=false};
+$('lb').onclick=()=>{$('lb').hidden=true};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('lb').hidden=true});
+$('tiers').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;tier=b.dataset.t;render()};
+$('bulkBtn').onclick=()=>{tier="bulk";render();$('tiers').scrollIntoView({block:"nearest"})};
+$('q').oninput=render;$('sort').onchange=render;render();
+</script>
+
+</body>
+</html>
